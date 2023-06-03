@@ -14,6 +14,12 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
       appBar: AppBar(
         title: Text("Números Primos"),
       ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(child: Text("Adicione aqui os limites:", textAlign: TextAlign.center,),)
+        ],
+      )
     );
   }
 }
