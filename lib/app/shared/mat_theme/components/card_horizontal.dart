@@ -58,7 +58,7 @@ class CardHorizontal extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF606170).withOpacity(0.16),
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
               blurRadius: 2,
             ),
           ],
