@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:mat_app/app/shared/mat_theme/color_theme/color_theme.dart';
 
 class TextFieldComponent extends StatelessWidget {
   TextFieldComponent({Key? key, required this.controller}) : super(key: key);
@@ -20,7 +22,10 @@ class TextFieldComponent extends StatelessWidget {
           fillColor: Theme.of(context).cardColor,
         ),
         textInputAction: TextInputAction.search,
-        style: TextStyle(color: Colors.red),
+        style: TextStyle(
+          fontSize: 20,
+          color: Modular.get<ColorTheme>().primaryColor,
+        ),
       ),
     );
   }

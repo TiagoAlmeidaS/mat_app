@@ -1,12 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mat_app/app/module/prime_numbers/prime_numbers_module.dart';
+import 'package:mat_app/app/module/splash/splash_page.dart';
+import 'package:mat_app/app/shared/mat_theme/color_theme/color_theme.dart';
 
 class AppModule extends Module {
   @override
-  List<Bind> get binds => [];
+  List<Bind> get binds => [
+    Bind<ColorTheme>((i) => ColorTheme())
+  ];
 
   @override
   List<ModularRoute> get routes => [
-    ModuleRoute(Modular.initialRoute, module: PrimeNumbersModule(),),
+    ChildRoute('/', child: (context, args) =>  SplashPage()),
+    ModuleRoute('/prime-numbers', module: PrimeNumbersModule(),),
   ];
 }
