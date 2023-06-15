@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:mat_app/app/shared/mat_theme/color_theme/color_theme.dart';
 
 class ViewNumbersPage extends StatefulWidget {
   ViewNumbersPage({required this.numbersPrime});
@@ -14,6 +15,7 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Modular.get<ColorTheme>().primaryColor,
       body: CustomScrollView(
         slivers: [
           SliverList(
@@ -28,7 +30,7 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
                       width: 10,
                     ),
                     GestureDetector(
-                      child: const Icon(Icons.arrow_back_ios),
+                      child: const Icon(Icons.arrow_back_ios, color: Colors.white,),
                       onTap: () => Modular.to.pop(),
                     ),
                     const SizedBox(
@@ -37,10 +39,10 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        "Números primos",
+                        "Números primos encontrados",
                         textAlign: TextAlign.start,
                         style: TextStyle(
-                            color: Color.fromRGBO(81, 80, 161, 1),
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 20),
                       ),
@@ -56,11 +58,11 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
                 .map((e) => Center(
                       child: Container(
                         margin: const EdgeInsets.symmetric(
-                            vertical: 5, horizontal: 5),
+                            vertical: 1, horizontal: 5),
                         padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 10),
+                            vertical: 15, horizontal: 18),
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(81, 80, 161, 1),
+                          color: Modular.get<ColorTheme>().secondaryColor,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -77,25 +79,6 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
                 .toList(),
           )
         ],
-        // child: Container(
-        //   padding: const EdgeInsets.symmetric(horizontal: 20),
-        //   decoration: const BoxDecoration(
-        //     color: Color.fromRGBO(246, 242, 251, 0.5),
-        //   ),
-        //   width: double.maxFinite,
-        //   child: Column(
-        //     children: [
-
-        //       Container(
-        //         height: MediaQuery.of(context).size.height,
-        //         child: GridView.count(
-        //           crossAxisCount: 4,
-        //           children:
-        //         ),
-        //       )
-        //     ],
-        //   ),
-        // ),
       ),
     );
   }

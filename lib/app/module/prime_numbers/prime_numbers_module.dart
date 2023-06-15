@@ -13,9 +13,5 @@ class PrimeNumbersModule extends Module {
           '/',
           child: (context, args) => PrimeNumbersPage(),
         ),
-        ModuleRoute(
-          '/view-numbers/',
-          module: ViewNumbersModule(),
-        )
       ];
 }
