@@ -35,13 +35,11 @@ class _SplashPageState extends State<SplashPage> {
             ),
           ),
           SizedBox(
-            height: 10,
+            height: 20,
           ),
           Center(
             child: CircularProgressIndicator(
               color: Modular.get<ColorTheme>().solarColor,
-              backgroundColor: Modular.get<ColorTheme>().solarBackgroundColor,
-              value: 1,
             ),
           )
         ],
