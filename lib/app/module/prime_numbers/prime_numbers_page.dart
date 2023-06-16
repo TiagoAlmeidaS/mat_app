@@ -30,7 +30,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            height: 20,
+            height: 30,
           ),
           Align(
             alignment: Alignment.centerLeft,
