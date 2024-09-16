@@ -6,14 +6,22 @@ class PrimesNumberService{
   List<int> listPrimesNumbers(int start, int end) {
 
     List<int> rangePrimos = [];
+    Iterable<int> basePrimos = [2,3,5,7];
 
-    if (start >= 0 && end <= 20) {
-      return [5, 7, 11, 13, 17, 19].where((prime) => prime >= start && prime <= end).toList();
+    if (end <= 49) {
+      // Usar uma lista fixa de números primos até 50
+      return [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47].where((prime) => prime >= start && prime <= end).toList();
     }
-
     var numerocalculados = numerosPrimos(start, end);
 
     rangePrimos.addAll(numerocalculados);
+
+    //Quero adicionar a base de primos caso não tenha no ragePrimos
+    basePrimos.forEach((element) {
+      if (!rangePrimos.contains(element)) {
+        rangePrimos.add(element);
+      }
+    });
 
     for (var number in rangePrimos) {
       if (!validadorNumeroPrimo(number)) {
@@ -24,7 +32,10 @@ class PrimesNumberService{
     if (kDebugMode) {
       print(rangePrimos);
     }
-    return rangePrimos;
+
+    var teste = rangePrimos..sort((a, b) => a.compareTo(b));
+
+    return teste;
   }
 
 
@@ -73,6 +84,11 @@ class PrimesNumberService{
   bool validadorNumeroPrimo(int numero) {
     bool ret = false;
 
+    // Tratamento especial para os primeiros primos
+    if (numero == 2 || numero == 3 || numero == 5) {
+      return true;
+    }
+
     //Valida se número é divisível por 3
     if (!numero.toString().endsWith('1') ||
         !numero.toString().endsWith('3') ||
@@ -97,7 +113,7 @@ class PrimesNumberService{
       ret = false;
     }
 
-    if (numero % 5 == 0) {
+    if (numero % 5 == 0 && numero != 5) {
       ret = false;
     }
 
@@ -105,7 +121,7 @@ class PrimesNumberService{
       ret = false;
     }
 
-    if (numero % 2 == 0) {
+    if (numero % 2 == 0 && numero != 2) {
       ret = false;
     }
 
