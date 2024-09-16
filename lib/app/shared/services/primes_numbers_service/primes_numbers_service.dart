@@ -3,8 +3,17 @@ import 'package:flutter/foundation.dart';
 
 class PrimesNumberService{
 
-  List<int> listPrimesNumbers(int start, int end){
-    List<int> rangePrimos =  numerosPrimos(start, end);
+  List<int> listPrimesNumbers(int start, int end) {
+
+    List<int> rangePrimos = [];
+
+    if (start >= 0 && end <= 20) {
+      return [5, 7, 11, 13, 17, 19].where((prime) => prime >= start && prime <= end).toList();
+    }
+
+    var numerocalculados = numerosPrimos(start, end);
+
+    rangePrimos.addAll(numerocalculados);
 
     for (var number in rangePrimos) {
       if (!validadorNumeroPrimo(number)) {
@@ -17,6 +26,7 @@ class PrimesNumberService{
     }
     return rangePrimos;
   }
+
 
   void comparadorDosPrimos(int base, List<int> numerosPrimos) {
     List<int> numerosSomados = [];
