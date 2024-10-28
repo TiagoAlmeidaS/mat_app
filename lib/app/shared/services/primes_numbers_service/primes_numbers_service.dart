@@ -1,270 +1,104 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 
-class PrimesNumberService{
-
+class PrimesNumberService {
+  /// Gera a lista completa de números primos entre [start] e [end].
   List<int> listPrimesNumbers(int start, int end) {
+    List<int> rangePrimos = formula1(numerosFixos(rangeA: start, rangeB: end), end);
 
-    List<int> rangePrimos = [];
-    Iterable<int> basePrimos = [2,3,5,7];
+    // Inclui 2, 3 e 5 manualmente se o intervalo cobrir esses números
+    if (start <= 2 && end >= 2) rangePrimos.add(2);
+    if (start <= 3 && end >= 3) rangePrimos.add(3);
+    if (start <= 5 && end >= 5) rangePrimos.add(5);
 
-    if (end <= 49) {
-      // Usar uma lista fixa de números primos até 50
-      return [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47].where((prime) => prime >= start && prime <= end).toList();
-    }
-    var numerocalculados = numerosPrimos(start, end);
+    // Filtra e mantém apenas os números primos validados
+    List<int> primosValidados = rangePrimos
+        .where((number) => validadorNumeroPrimo(number))
+        .toList();
 
-    rangePrimos.addAll(numerocalculados);
+    // Ordena a lista final de primos
+    primosValidados.sort((a, b) => a.compareTo(b));
 
-    //Quero adicionar a base de primos caso não tenha no ragePrimos
-    basePrimos.forEach((element) {
-      if (!rangePrimos.contains(element)) {
-        rangePrimos.add(element);
-      }
-    });
-
-    for (var number in rangePrimos) {
-      if (!validadorNumeroPrimo(number)) {
-        rangePrimos.remove(number);
-      }
+    if(kDebugMode){
+      print(primosValidados);
     }
 
-    if (kDebugMode) {
-      print(rangePrimos);
-    }
-
-    var teste = rangePrimos..sort((a, b) => a.compareTo(b));
-
-    return teste;
+    return primosValidados;
   }
 
-
-  void comparadorDosPrimos(int base, List<int> numerosPrimos) {
-    List<int> numerosSomados = [];
-
-    numerosPrimos.forEach((element) {
-      numerosSomados.add(element + base);
-    });
-
-    print(numerosSomados);
-  }
-
-// Verificar se a divisão de outro primo -> Par
-//
-
-  List<int> numerosPrimos(int rangeA, int rangeB) {
-    Map<String, int> fixos = {};
-    List<int> primosBasicos = [];
-    List<int> formulaUm = [];
-    List<int> excluirNaoNumeroPrimo = [];
-
-    primosBasicos = numerosPrimosBasicos(rangeB);
-    fixos = numerosFixos(rangeA: rangeA, rangeB: rangeB);
-    formulaUm = formula1(fixos, rangeB);
-
-    primosBasicos.forEach((element1) {
-      formulaUm.forEach((element2) {
-        if (element2 % element1 == 0 && element2 > element1) {
-          excluirNaoNumeroPrimo.add(element2);
-        }
-      });
-    });
-
-    excluirNaoNumeroPrimo.forEach((element) {
-      formulaUm.remove(element);
-    });
-
-    var teste = formulaUm..sort((a, b) => a.compareTo(b));
-
-    print("${teste}");
-
-    return formulaUm;
-  }
-
-  bool validadorNumeroPrimo(int numero) {
-    bool ret = false;
-
-    // Tratamento especial para os primeiros primos
-    if (numero == 2 || numero == 3 || numero == 5) {
-      return true;
-    }
-
-    //Valida se número é divisível por 3
-    if (!numero.toString().endsWith('1') ||
-        !numero.toString().endsWith('3') ||
-        !numero.toString().endsWith('7') ||
-        !numero.toString().endsWith('9')) {
-      ret = true;
-    }
-
-    int soma = 0;
-    int resto = 0;
-    int n = numero;
-    while (n > 0) {
-      resto = n % 10;
-      n = ((n - resto) / 10).round();
-      soma = soma + resto;
-    }
-    if (soma % 3 == 0) {
-      ret = false;
-    }
-
-    if (numero == 1) {
-      ret = false;
-    }
-
-    if (numero % 5 == 0 && numero != 5) {
-      ret = false;
-    }
-
-    if (numero % 3 == 0) {
-      ret = false;
-    }
-
-    if (numero % 2 == 0 && numero != 2) {
-      ret = false;
-    }
-
-    //Validador Número primo
-    return ret;
-  }
-
-  List<int> numerosPrimosBasicos(int rangeB) {
-    int numeroBase = 0;
-    List<int> numerosBasicos = [];
-    List<int> numerosAuxBasicos = [];
-    List<int> removeNPrimos = [];
-
-    numeroBase = sqrt(rangeB).round();
-    if (numeroBase < 7) {
-      throw Exception("Infelizmente está fora do range de cálculo.");
-    }
-    //Verifica se é número primo
-    while (validadorNumeroPrimo(numeroBase) == false) {
-      numeroBase--;
-    }
-
-    for (int numeroAux = numeroBase; numeroAux >= 7; numeroAux--) {
-      if (validadorNumeroPrimo(numeroAux) == true) {
-        numerosAuxBasicos.add(numeroAux);
-      }
-    }
-
-    numerosBasicos = numerosAuxBasicos;
-
-    //Necessário para verificar se um "Primo" é dívisível pelo outro
-    numerosAuxBasicos.forEach((e1) {
-      numerosAuxBasicos.forEach((e2) {
-        if (e1 % e2 == 0 && numerosBasicos.contains(e1) && e1 > e2) {
-          removeNPrimos.add(e1);
-        }
-      });
-    });
-
-    //Adicioandos a uma lista para poder remover, pois o programa não permite
-    removeNPrimos.forEach((element) => numerosBasicos.remove(element));
-
-    return numerosBasicos;
-  }
-
-  Map<String, int> numerosFixos({required int rangeA, required int rangeB}) {
-    Map<String, String> terminacoes = Map<String, String>();
-    terminacoes['t1'] = '1';
-    terminacoes['t3'] = '3';
-    terminacoes['t7'] = '7';
-    terminacoes['t9'] = '9';
-    Map<String, int> tabelaFixa = {};
-
-    terminacoes.forEach((key, terminacao) {
-      int value = rangeA;
-      while (value.toString().endsWith(terminacao) == false) {
-        value++;
-        if (validadorNumeroPrimo(value) == false &&
-            value.toString().endsWith(terminacao) == true) {
-          value++;
-        }
-      }
-      tabelaFixa[key + '1'] = value;
-      int nextValue = value + 10;
-      while (validadorNumeroPrimo(nextValue) == false) {
-        nextValue = nextValue + 10;
-      }
-      tabelaFixa[key + '2'] = nextValue;
-    });
-
-    return tabelaFixa;
-  }
-
+  /// Implementa a lógica da Fórmula 1: Gera candidatos a primos.
   List<int> formula1(Map<String, int> numerosFixos, int rangeB) {
     List<int> primosECompostosPrimazes = [];
-    List<int> removerNPrimos = [];
-    int resultFunction = 0;
 
+    // Gera os números candidatos a partir da fórmula 30n + t
     numerosFixos.forEach((key, value) {
-      for (int i = 0; resultFunction < rangeB; i++) {
-        resultFunction = (30 * i) + value;
-        if (resultFunction < rangeB) {
-          primosECompostosPrimazes.add(resultFunction);
+      for (int n = 0; (30 * n) + value <= rangeB; n++) {
+        int result = (30 * n) + value;
+
+        // Adiciona o número se não for múltiplo de 2, 3, ou 5, e não duplicado
+        if (result % 2 != 0 &&
+            result % 3 != 0 &&
+            result % 5 != 0 &&
+            !primosECompostosPrimazes.contains(result)) {
+          primosECompostosPrimazes.add(result);
         }
       }
-      resultFunction = 0;
-    });
-
-    removerNPrimos.forEach((element) {
-      primosECompostosPrimazes.remove(element);
     });
 
     return primosECompostosPrimazes;
   }
 
-  Map<String, int> multiplos(
-      {required List<int> primosBasicos, required int rangeA}) {
-    Map<String, int> multPb = {};
-    Map<String, Map<String, int>> nAux = {};
+  /// Valida se um número é primo.
+  bool validadorNumeroPrimo(int numero) {
+    if (numero < 2) return false;
+    if (numero == 2 || numero == 3 || numero == 5) return true;
+    if (numero % 2 == 0 || numero % 3 == 0 || numero % 5 == 0) return false;
 
-    Map<String, String> terminacoes = Map<String, String>();
-    terminacoes['n1'] = '1';
-    terminacoes['n3'] = '3';
-    terminacoes['n7'] = '7';
-    terminacoes['n9'] = '9';
-    int numeroBasico = 0;
+    // Verifica divisibilidade até a raiz quadrada do número
+    for (int i = 7; i <= sqrt(numero).toInt(); i += 2) {
+      if (numero % i == 0) return false;
+    }
 
-    primosBasicos.forEach((element) {
-      print("primosBasicos: " + element.toString());
-      Map<String, int> sequenciasNumeros = {};
-      numeroBasico = (rangeA / element).round();
-      terminacoes.forEach((key, terminacao) {
-        while (validadorNumeroPrimo(numeroBasico) == false &&
-            !numeroBasico.toString().endsWith(terminacao)) {
-          numeroBasico++;
-        }
-        int nextValue = numeroBasico + 10;
-        while (validadorNumeroPrimo(nextValue) == false) {
-          nextValue = nextValue + 10;
-        }
-
-        sequenciasNumeros.addAll({key + '1': numeroBasico, key + '2': nextValue});
-
-        numeroBasico++;
-      });
-
-      print(sequenciasNumeros);
-      String elemento = element.toString();
-      nAux.putIfAbsent(elemento, () => sequenciasNumeros);
-    });
-    print("end of primosBasicos");
-    nAux.addAll({
-      '19': {'n11': 11}
-    });
-
-    print("nAux: " + nAux.toString());
-    return multPb;
+    return true;
   }
 
-  List<int> multiploPrimos(Map<String, int> multiplos, int rangeB) {
-    List<int> multiplosPrimos = [];
+  /// Gera os primos básicos até a raiz quadrada do limite superior.
+  List<int> numerosPrimosBasicos(int rangeB) {
+    List<int> primosBasicos = [2, 3, 5];
 
-    return multiplosPrimos;
+    for (int i = 7; i <= sqrt(rangeB).toInt(); i++) {
+      if (validadorNumeroPrimo(i)) {
+        primosBasicos.add(i);
+      }
+    }
+
+    return primosBasicos;
   }
 
+  /// Define os números fixos terminando em 1, 3, 7 e 9 para a fórmula.
+  Map<String, int> numerosFixos({required int rangeA, required int rangeB}) {
+    Map<String, int> tabelaFixa = {};
+    List<String> terminacoes = ['1', '3', '7', '9'];
+
+    for (String terminacao in terminacoes) {
+      int value = rangeA;
+
+      // Encontra o primeiro número com a terminação correta que seja primo
+      while (!value.toString().endsWith(terminacao) || !validadorNumeroPrimo(value)) {
+        value++;
+      }
+
+      tabelaFixa[terminacao + '1'] = value;
+
+      // Encontra o próximo número com a mesma terminação e também primo
+      int nextValue = value + 10;
+      while (!validadorNumeroPrimo(nextValue)) {
+        nextValue += 10;
+      }
+
+      tabelaFixa[terminacao + '2'] = nextValue;
+    }
+
+    return tabelaFixa;
+  }
 }
