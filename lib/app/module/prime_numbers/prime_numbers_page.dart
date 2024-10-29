@@ -149,6 +149,13 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                   "Criadores: G&T",
                   style: TextStyle(color: Colors.white),
                 ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Text(
+                  "Versão: 1.0.2 (202410282)",
+                  style: TextStyle(color: Colors.white),
+                ),
               )
             ],
           ),
