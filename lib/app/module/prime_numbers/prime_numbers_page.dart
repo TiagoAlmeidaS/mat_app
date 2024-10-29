@@ -120,8 +120,8 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        var lista = Modular.get<PrimeNumberV2Service>.call()
-                            .calculatePrimes(int.parse(controllerNumber1.text),
+                        var lista = Modular.get<PrimesNumberService>.call()
+                            .listPrimesNumbers(int.parse(controllerNumber1.text),
                             int.parse(controllerNumber2.text));
                         Modular.to.pushNamed('/view-numbers/',
                             arguments: {'numbersPrime': lista});
