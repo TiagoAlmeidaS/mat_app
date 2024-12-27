@@ -1,74 +1,115 @@
+import 'dart:isolate';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 class PrimesNumberService {
+  // Método principal para obter números primos, adaptando por plataforma
+  Future<List<int>> listPrimesNumbers(int start, int end) async {
+    if (kIsWeb) {
+      // Comportamento para Web
+      return await _listPrimesNumbersWeb(start, end);
+    } else {
+      // Comportamento para Mobile/Desktop
+      return await listPrimesNumbersV2(start, end);
+    }
+  }
 
-  List<int> listPrimesNumbers(int start, int end) {
-    List<int> result = [2, 3, 5].where((x) => x >= start && x <= end).toList();
-    List<int> rangePrimos = numerosPrimos(start, end);
+  // Implementação para Web (chunking)
+  Future<List<int>> _listPrimesNumbersWeb(int start, int end) async {
+    List<int> primes = [];
+    int chunkSize = 1000; // Processa em blocos de 1000 números
 
-    List<int> filteredPrimos = rangePrimos.where((number) {
-      return validadorNumeroPrimo(number);
-    }).toList();
+    for (int i = start; i <= end; i += chunkSize) {
+      final chunkStart = i;
+      final chunkEnd = (i + chunkSize - 1).clamp(chunkStart, end);
 
-    result.addAll(filteredPrimos);
+      // Processa cada bloco
+      primes.addAll(_processChunk(chunkStart, chunkEnd));
 
-    result.sort((a, b) => a.compareTo(b));
-
-    if (kDebugMode) {
-      print(result);
+      // Aguarda um frame para evitar travamento
+      await Future.delayed(Duration(milliseconds: 1));
     }
 
-    return result;
+    return primes;
   }
 
-
-  void comparadorDosPrimos(int base, List<int> numerosPrimos) {
-    List<int> numerosSomados = [];
-
-    numerosPrimos.forEach((element) {
-      numerosSomados.add(element + base);
-    });
-
-    print(numerosSomados);
+  // Método auxiliar para processar um bloco de números
+  List<int> _processChunk(int start, int end) {
+    List<int> primes = [];
+    for (int i = start; i <= end; i++) {
+      if (validadorNumeroPrimo(i)) primes.add(i);
+    }
+    return primes;
   }
 
-// Verificar se a divisão de outro primo -> Par
-//
+  // Implementação para Mobile/Desktop usando Isolates
+  Future<List<int>> listPrimesNumbersV2(int start, int end) async {
+    final ReceivePort receivePort = ReceivePort();
 
-  List<int> numerosPrimos(int rangeA, int rangeB) {
+    // Spawna um isolate
+    await Isolate.spawn(
+        _calculatePrimesInIsolate, [receivePort.sendPort, start, end]);
+
+    // Recebe os dados do isolate
+    return await receivePort.first;
+  }
+
+  void _calculatePrimesInIsolate(List<dynamic> args) async {
+    SendPort sendPort = args[0];
+    int start = args[1];
+    int end = args[2];
+
+    // Calcula os números primos
+    List<int> primes = [];
+    try {
+      primes = await numerosPrimos(start, end);
+    } catch (e) {
+      print('Erro ao calcular números primos: $e. Abordando manual');
+      for (int i = start; i <= end; i++) {
+        if (validadorNumeroPrimo(i)) primes.add(i);
+      }
+    }
+
+    // Envia os resultados de volta para o main isolate
+    sendPort.send(primes);
+  }
+
+  Future<List<int>> numerosPrimos(int rangeA, int rangeB) async {
+    return await compute(
+      _calculateNumerosPrimos,
+      {'rangeA': rangeA, 'rangeB': rangeB},
+    );
+  }
+
+  List<int> _calculateNumerosPrimos(Map<String, int> params) {
+    print("Iniciando fórmula...");
+    int rangeA = params['rangeA']!;
+    int rangeB = params['rangeB']!;
     Map<String, int> fixos = {};
     List<int> primosBasicos = [];
-    List<int> formulaUm = [];
+    Set<int> formulaUm = {};
     List<int> excluirNaoNumeroPrimo = [];
 
     primosBasicos = numerosPrimosBasicos(rangeB);
     fixos = numerosFixos(rangeA: rangeA, rangeB: rangeB);
-    formulaUm = formula1(fixos, rangeB);
+    formulaUm = formula1(fixos, rangeB).toSet();
 
-    primosBasicos.forEach((element1) {
-      formulaUm.forEach((element2) {
+    for (int element1 in primosBasicos) {
+      for (int element2 in formulaUm) {
         if (element2 % element1 == 0 && element2 > element1) {
           excluirNaoNumeroPrimo.add(element2);
         }
-      });
-    });
+      }
+    }
 
-    excluirNaoNumeroPrimo.forEach((element) {
-      formulaUm.remove(element);
-    });
+    formulaUm.removeAll(excluirNaoNumeroPrimo);
 
-    var teste = formulaUm..sort((a, b) => a.compareTo(b));
-
-    print("${teste}");
-
-    return formulaUm;
+    return formulaUm.toList()..sort((a, b) => a.compareTo(b));
   }
 
   bool validadorNumeroPrimo(int numero) {
     bool ret = false;
 
-    //Valida se número é divisível por 3
     if (!numero.toString().endsWith('1') ||
         !numero.toString().endsWith('3') ||
         !numero.toString().endsWith('7') ||
@@ -104,7 +145,6 @@ class PrimesNumberService {
       ret = false;
     }
 
-    //Validador Número primo
     return ret;
   }
 
@@ -118,7 +158,6 @@ class PrimesNumberService {
     if (numeroBase < 7) {
       throw Exception("Infelizmente está fora do range de cálculo.");
     }
-    //Verifica se é número primo
     while (validadorNumeroPrimo(numeroBase) == false) {
       numeroBase--;
     }
@@ -131,7 +170,6 @@ class PrimesNumberService {
 
     numerosBasicos = numerosAuxBasicos;
 
-    //Necessário para verificar se um "Primo" é dívisível pelo outro
     numerosAuxBasicos.forEach((e1) {
       numerosAuxBasicos.forEach((e2) {
         if (e1 % e2 == 0 && numerosBasicos.contains(e1) && e1 > e2) {
@@ -140,7 +178,6 @@ class PrimesNumberService {
       });
     });
 
-    //Adicioandos a uma lista para poder remover, pois o programa não permite
     removeNPrimos.forEach((element) => numerosBasicos.remove(element));
 
     return numerosBasicos;
@@ -195,55 +232,4 @@ class PrimesNumberService {
 
     return primosECompostosPrimazes;
   }
-
-  Map<String, int> multiplos(
-      {required List<int> primosBasicos, required int rangeA}) {
-    Map<String, int> multPb = {};
-    Map<String, Map<String, int>> nAux = {};
-
-    Map<String, String> terminacoes = Map<String, String>();
-    terminacoes['n1'] = '1';
-    terminacoes['n3'] = '3';
-    terminacoes['n7'] = '7';
-    terminacoes['n9'] = '9';
-    int numeroBasico = 0;
-
-    primosBasicos.forEach((element) {
-      print("primosBasicos: " + element.toString());
-      Map<String, int> sequenciasNumeros = {};
-      numeroBasico = (rangeA / element).round();
-      terminacoes.forEach((key, terminacao) {
-        while (validadorNumeroPrimo(numeroBasico) == false &&
-            !numeroBasico.toString().endsWith(terminacao)) {
-          numeroBasico++;
-        }
-        int nextValue = numeroBasico + 10;
-        while (validadorNumeroPrimo(nextValue) == false) {
-          nextValue = nextValue + 10;
-        }
-
-        sequenciasNumeros.addAll({key + '1': numeroBasico, key + '2': nextValue});
-
-        numeroBasico++;
-      });
-
-      print(sequenciasNumeros);
-      String elemento = element.toString();
-      nAux.putIfAbsent(elemento, () => sequenciasNumeros);
-    });
-    print("end of primosBasicos");
-    nAux.addAll({
-      '19': {'n11': 11}
-    });
-
-    print("nAux: " + nAux.toString());
-    return multPb;
-  }
-
-  List<int> multiploPrimos(Map<String, int> multiplos, int rangeB) {
-    List<int> multiplosPrimos = [];
-
-    return multiplosPrimos;
-  }
-
 }
