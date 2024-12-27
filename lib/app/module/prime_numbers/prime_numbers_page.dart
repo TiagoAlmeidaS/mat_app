@@ -68,29 +68,37 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Regras",
+                          "Informações e Regras:",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, color: Colors.white),
                         ),
+                        SizedBox(height: 4,),
                         Text(
                           "1. Um número primo é um número natural maior que 1, que tem apenas dois divisores positivos: 1 e ele mesmo.",
                           style: TextStyle(color: Colors.white),
                         ),
                         Text(
+                          "Obs.: 2, 3, 5 são números primos de exceção para o cálculo",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 2,),
+                        Text(
                           "2. O usuário pode inserir um intervalo de números inteiros para calcular todos os números primos dentro desse intervalo.",
                           style: TextStyle(color: Colors.white),
                         ),
+                        SizedBox(height: 2,),
                         Text(
                           "3. Para o cálculo dos números primos, indicar o intervalo de números, depois em calcular.",
                           style: TextStyle(color: Colors.white),
                         ),
+                        SizedBox(height: 2,),
                       ],
                     ),
                   ),
                 ],
               ),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.2,
+                height: MediaQuery.of(context).size.height * 0.08,
               ),
               Column(
                 children: [
@@ -130,7 +138,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                     ],
                   ),
                   const SizedBox(
-                    height: 40,
+                    height: 20,
                   ),
                   ValueListenableBuilder<bool>(
                     valueListenable: _isLoading,
@@ -179,7 +187,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                     },
                   ),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.1,
+                    height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   Container(
                     child: Text("Exemplo de intervalo: 1 à 100",
