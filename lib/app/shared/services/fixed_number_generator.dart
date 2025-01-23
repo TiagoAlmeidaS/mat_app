@@ -6,35 +6,30 @@ class FixedNumberGenerator {
   FixedNumberGenerator(this.validator);
 
   Map<String, int> generateFixedNumbers(int rangeA, int rangeB) {
-    final Map<String, String> terminacoes = {
-      't1': '1',
-      't3': '3',
-      't7': '7',
-      't9': '9'
-    };
-    final Map<String, int> tabelaFixa = {};
+    Map<String, String> terminacoes = Map<String, String>();
+    terminacoes['t1'] = '1';
+    terminacoes['t3'] = '3';
+    terminacoes['t7'] = '7';
+    terminacoes['t9'] = '9';
+    Map<String, int> tabelaFixa = {};
 
     terminacoes.forEach((key, terminacao) {
-      int value = rangeA < 7 ? 7 : rangeA;
-
-      while (!validator.endsWith(value, terminacao) || value == 1) {
+      int value = rangeA;
+      while (value.toString().endsWith(terminacao) == false) {
         value++;
-        if (!validator.isPrime(value) && validator.endsWith(value, terminacao)) {
+        if (validator.isPrime(value) == false &&
+            value.toString().endsWith(terminacao) == true) {
           value++;
         }
       }
-
       tabelaFixa[key + '1'] = value;
-
       int nextValue = value + 10;
-      while (!validator.isPrime(nextValue)) {
-        nextValue += 10;
+      while (validator.isPrime(nextValue) == false) {
+        nextValue = nextValue + 10;
       }
-
       tabelaFixa[key + '2'] = nextValue;
     });
 
-    print("Tabela fixa: $tabelaFixa");
     return tabelaFixa;
   }
 }

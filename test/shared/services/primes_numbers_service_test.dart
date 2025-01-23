@@ -115,6 +115,83 @@ void main() {
 
       expect(result, [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]);
     });
+
+    test('Compare the numbers range 9  to 10000', () async {
+      final start = 9;
+      final end = 10000;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      expect(result.contains(9137), isTrue);
+      expect(result.contains(9173), isTrue);
+      expect(result.contains(9203), isTrue);
+      expect(result.contains(9227), isTrue);
+      expect(result.contains(9257), isTrue);
+      expect(result.contains(9293), isTrue);
+      expect(result.contains(9323), isTrue);
+      expect(result.contains(9377), isTrue);
+      expect(result.contains(9413), isTrue);
+      expect(result.contains(9437), isTrue);
+      expect(result.contains(9467), isTrue);
+      expect(result.contains(9473), isTrue);
+      expect(result.contains(9497), isTrue);
+      expect(result.contains(9533), isTrue);
+      expect(result.contains(9587), isTrue);
+      expect(result.contains(9587), isTrue);
+      expect(result.contains(9677), isTrue);
+      expect(result.contains(9743), isTrue);
+      expect(result.contains(9767), isTrue);
+      expect(result.contains(9803), isTrue);
+      expect(result.contains(9833), isTrue);
+      expect(result.contains(9857), isTrue);
+      expect(result.contains(9887), isTrue);
+      expect(result.contains(9923), isTrue);
+      expect(result.contains(9923), isTrue);
+    });
+
+    test('Compare the numbers range 9000 to 10000', () async {
+      final start = 9000;
+      final end = 10000;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      expect(result.contains(9137), isTrue);
+      expect(result.contains(9173), isTrue);
+      expect(result.contains(9203), isTrue);
+      expect(result.contains(9227), isTrue);
+      expect(result.contains(9257), isTrue);
+      expect(result.contains(9293), isTrue);
+      expect(result.contains(9323), isTrue);
+      expect(result.contains(9377), isTrue);
+      expect(result.contains(9413), isTrue);
+      expect(result.contains(9437), isTrue);
+      expect(result.contains(9467), isTrue);
+      expect(result.contains(9473), isTrue);
+      expect(result.contains(9497), isTrue);
+      expect(result.contains(9533), isTrue);
+      expect(result.contains(9587), isTrue);
+      expect(result.contains(9587), isTrue);
+      expect(result.contains(9677), isTrue);
+      expect(result.contains(9743), isTrue);
+      expect(result.contains(9767), isTrue);
+      expect(result.contains(9803), isTrue);
+      expect(result.contains(9833), isTrue);
+      expect(result.contains(9857), isTrue);
+      expect(result.contains(9887), isTrue);
+      expect(result.contains(9923), isTrue);
+      expect(result.contains(9923), isTrue);
+    });
+
+    test('Compare the numbers range 8  to 8000', () async {
+      final start = 8;
+      final end = 9000;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      
+      expect(result.contains(8059), isTrue);
+      expect(result.contains(8089), isTrue);
+    });
   });
 
   group('Formula1 Tests', () {

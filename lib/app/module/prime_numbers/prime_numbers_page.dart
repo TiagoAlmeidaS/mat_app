@@ -160,7 +160,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
 
                                   try {
                                     // Simulação de uma operação demorada com Future.delayed
-                                    var listNumbers = await primeservice.listPrimesNumbersV2(int.parse(controllerNumber1.text), int.parse(controllerNumber2.text));
+                                    var listNumbers = await primeservice.listPrimesNumbers(int.parse(controllerNumber1.text), int.parse(controllerNumber2.text));
 
                                     // Simula a navegação com dados fictícios
                                     await Modular.to.pushNamed(

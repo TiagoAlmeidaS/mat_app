@@ -43,11 +43,9 @@ class PrimesNumberServiceOld {
     List<int> excluirNaoNumeroPrimo = [];
 
     primosBasicos = numerosPrimosBasicos(rangeB);
-    print("Primos básicos: $primosBasicos");
     fixos = numerosFixos(rangeA: rangeA, rangeB: rangeB);
     print("Fixos: $fixos");
     formulaUm = formula1(fixos, rangeB);
-    print("Fórmula 1: $formulaUm");
 
     primosBasicos.forEach((element1) {
       formulaUm.forEach((element2) {
@@ -57,13 +55,9 @@ class PrimesNumberServiceOld {
       });
     });
 
-    print("Excluir não primos: $excluirNaoNumeroPrimo");
-
     excluirNaoNumeroPrimo.forEach((element) {
       formulaUm.remove(element);
     });
-
-    print("Fórmula 1 final: $formulaUm");
 
     var teste = formulaUm..sort((a, b) => a.compareTo(b));
 
@@ -74,16 +68,6 @@ class PrimesNumberServiceOld {
 
   bool validadorNumeroPrimo(int numero) {
     bool ret = false;
-
-    if (numero == 2) {
-      ret = true;
-      return ret;
-    }
-
-    if (numero == 3) {
-      ret = true;
-      return ret;
-    }
 
     //Valida se número é divisível por 3
     if (!numero.toString().endsWith('1') ||
@@ -173,7 +157,7 @@ class PrimesNumberServiceOld {
 
     terminacoes.forEach((key, terminacao) {
       int value = rangeA;
-      while (value == 1 || value.toString().endsWith(terminacao) == false) {
+      while (value.toString().endsWith(terminacao) == false) {
         value++;
         if (validadorNumeroPrimo(value) == false &&
             value.toString().endsWith(terminacao) == true) {
