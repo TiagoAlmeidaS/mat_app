@@ -61,14 +61,92 @@ void main() {
     test('listPrimesNumbersV2 handles range 1 to 100', () async {
       final primes = await service.listPrimesNumbersV2(1, 100);
       expect(primes, [
+        7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97
+      ]);
+    });
+
+    test('validate the number is prime', () async {
+      final isPrimed = service.validadorNumeroPrimo(53);
+
+      expect(isPrimed, true);
+    });
+
+    test(
+        'listPrimesNumbers should return correct prime numbers that containt 53',
+        () async {
+      final start = 1;
+      final end = 60;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      expect(result.contains(53), isTrue);
+    });
+
+    test(
+        'listPrimesNumbers should return correct prime numbers that containt 53 range to 1 at 50',
+        () async {
+      final start = 10;
+      final end = 60;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      expect(result.contains(53), isTrue);
+    });
+
+    test('Compare the numbers range  to 500', () async {
+      final start = 1;
+      final end = 500;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      expect(result.contains(53), isTrue);
+
+      expect(result, [
+        7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,  223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499]);
+    });
+
+    test('Compare the numbers range  to 100', () async {
+      final start = 1;
+      final end = 100;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      expect(result.contains(53), isTrue);
+
+      expect(result, [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]);
+    });
+  });
+
+  group('Formula1 Tests', () {
+    late PrimesNumberService service;
+
+    setUp(() {
+      service = PrimesNumberService();
+    });
+
+    test('Deve retornar números corretos dentro do intervalo (7, 500)', () {
+      // Valores fixos fornecidos pela fórmula na documentação
+      final numerosFixos = {
+        't11': 11,
+        't12': 31,
+        't31': 13,
+        't32': 23,
+        't71': 7,
+        't72': 17,
+        't91': 19,
+        't92': 29
+      };
+
+      final rangeB = 500;
+      final expectedOutput = [
         7,
         11,
         13,
         17,
         19,
+        23,
         29,
         31,
-        33,
         37,
         41,
         43,
@@ -80,34 +158,148 @@ void main() {
         71,
         73,
         79,
+        83,
         89,
-        93,
-        97
-      ]);
+        97,
+        101,
+        103,
+        107,
+        109,
+        113,
+        127,
+        131,
+        137,
+        139,
+        149,
+        151,
+        157,
+        163,
+        167,
+        173,
+        179,
+        181,
+        191,
+        193,
+        197,
+        199,
+        211,
+        223,
+        227,
+        229,
+        233,
+        239,
+        241,
+        251,
+        257,
+        263,
+        269,
+        271,
+        277,
+        281,
+        283,
+        293,
+        307,
+        311,
+        313,
+        317,
+        331,
+        337,
+        347,
+        349,
+        353,
+        359,
+        367,
+        373,
+        379,
+        383,
+        389,
+        397,
+        401,
+        409,
+        419,
+        421,
+        431,
+        433,
+        439,
+        443,
+        449,
+        457,
+        461,
+        463,
+        467,
+        479,
+        487,
+        491,
+        499
+      ];
+
+      final result = service.formula1(numerosFixos, rangeB);
+
+      expect(result, equals(expectedOutput));
     });
 
-    test('validate the number is prime', () async {
-      final isPrimed = service.validadorNumeroPrimo(53);
+    test('Deve retornar números corretos dentro do intervalo (10, 60)', () {
+      // Valores fixos fornecidos pela fórmula na documentação
+      final numerosFixos = {
+        't11': 11,
+        't12': 31,
+        't31': 13,
+        't32': 23,
+        't71': 17,
+        't72': 37,
+        't91': 19,
+        't92': 29
+      };
 
-      expect(isPrimed, true);
+      final rangeB = 60;
+      final expectedOutput = [
+        11,
+        13,
+        17,
+        19,
+        23,
+        29,
+        31,
+        37,
+        41,
+        43,
+        47,
+        53,
+        59
+      ];
+
+      final result = service.formula1(numerosFixos, rangeB);
+
+      expect(result, equals(expectedOutput));
     });
 
-    test('listPrimesNumbers should return correct prime numbers that containt 53', () async {
-      final start = 1;
-      final end = 60;
+    test(
+        'Não deve incluir múltiplos de primos básicos dentro do intervalo (7, 100)',
+        () {
+      // Valores fixos fornecidos pela fórmula na documentação
+      final numerosFixos = {
+        't11': 11,
+        't12': 31,
+        't31': 13,
+        't32': 23,
+        't71': 7,
+        't72': 17,
+        't91': 19,
+        't92': 29
+      };
 
-      final result = await service.listPrimesNumbers(start, end);
+      final rangeB = 100;
+      final unexpectedNumbers = [
+        91,
+        77,
+        49
+      ]; // Números compostos que não devem aparecer
 
-      expect(result.contains(53), isTrue);
-    });
+      final result = service.formula1(numerosFixos, rangeB);
 
-    test('listPrimesNumbers should return correct prime numbers that containt 53 range to 1 at 50', () async {
-      final start = 10;
-      final end = 60;
-
-      final result = await service.listPrimesNumbers(start, end);
-
-      expect(result.contains(53), isTrue);
+      for (final number in unexpectedNumbers) {
+        expect(result, isNot(contains(number)));
+      }
     });
   });
 }

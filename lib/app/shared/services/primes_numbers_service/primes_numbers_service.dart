@@ -1,8 +1,18 @@
 import 'dart:isolate';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:mat_app/app/shared/services/fixed_number_generator.dart';
+import 'package:mat_app/app/shared/services/number_validator.dart';
 
 class PrimesNumberService {
+
+  NumberValidator validator = NumberValidator();
+  FixedNumberGenerator? fixedNumberGenerator;
+
+  PrimesNumberService() {
+    fixedNumberGenerator = FixedNumberGenerator(validator);
+  }
+
   // Método principal para obter números primos, adaptando por plataforma
   Future<List<int>> listPrimesNumbers(int start, int end) async {
     if (kIsWeb) {
@@ -100,7 +110,7 @@ class PrimesNumberService {
 
     primosBasicos = numerosPrimosBasicos(rangeB);
     print("Primos básicos: $primosBasicos");
-    fixos = numerosFixos(rangeA: rangeA, rangeB: rangeB);
+    fixos = fixedNumberGenerator?.generateFixedNumbers(rangeA, rangeB) ?? {};
     print("Fixos: $fixos");
     formulaUm = formula1(fixos, rangeB).toSet();
     print("Fórmula 1: $formulaUm");
@@ -150,11 +160,27 @@ class PrimesNumberService {
       return ret;
     }
 
+    if (numero % 5 == 0) {
+      ret = false;
+      return ret;
+    }
+
+    if (numero % 3 == 0) {
+      ret = false;
+      return ret;
+    }
+
+    if (numero % 2 == 0) {
+      ret = false;
+      return ret;
+    }
+
     if (!numero.toString().endsWith('1') ||
         !numero.toString().endsWith('3') ||
         !numero.toString().endsWith('7') ||
         !numero.toString().endsWith('9')) {
       ret = true;
+      return ret;
     }
 
     int soma = 0;
@@ -165,20 +191,10 @@ class PrimesNumberService {
       n = ((n - resto) / 10).round();
       soma = soma + resto;
     }
+
     if (soma % 3 == 0) {
       ret = false;
-    }
-
-    if (numero % 5 == 0) {
-      ret = false;
-    }
-
-    if (numero % 3 == 0) {
-      ret = false;
-    }
-
-    if (numero % 2 == 0) {
-      ret = false;
+      return ret;
     }
 
     return ret;
@@ -230,10 +246,7 @@ class PrimesNumberService {
     terminacoes.forEach((key, terminacao) {
       int value = rangeA;
 
-      // if(value == 1){
-      //   value = 10;
-      // }
-
+      //TODO: Necessário que meu value ele seja maior que sete. 
       while (value.toString().endsWith(terminacao) == false || value == 1) {
         value++;
         if (validadorNumeroPrimo(value) == false &&
@@ -241,6 +254,7 @@ class PrimesNumberService {
           value++;
         }
       }
+
       tabelaFixa[key + '1'] = value;
       int nextValue = value + 10;
       while (validadorNumeroPrimo(nextValue) == false) {
@@ -249,28 +263,36 @@ class PrimesNumberService {
       tabelaFixa[key + '2'] = nextValue;
     });
 
+    print("Tabela fixa: $tabelaFixa");
     return tabelaFixa;
   }
 
   List<int> formula1(Map<String, int> numerosFixos, int rangeB) {
     List<int> primosECompostosPrimazes = [];
-    List<int> removerNPrimos = [];
-    int resultFunction = 0;
+    Set<int> removerNPrimos = {}; // Usar Set para evitar duplicatas
+    int resultFunction;
 
     numerosFixos.forEach((key, value) {
-      for (int i = 0; resultFunction < rangeB; i++) {
-        resultFunction = (30 * i) + value;
-        if (resultFunction < rangeB) {
+      // Gera os números da fórmula 1 para cada valor t
+      for (int n = 0; (resultFunction = 30 * n + value) <= rangeB; n++) {
+        if(validadorNumeroPrimo(resultFunction)){
           primosECompostosPrimazes.add(resultFunction);
         }
       }
-      resultFunction = 0;
     });
 
-    removerNPrimos.forEach((element) {
-      primosECompostosPrimazes.remove(element);
-    });
+    // Identifica e remove os múltiplos dos primos básicos
+    for (int i = 2; i <= sqrt(rangeB).toInt(); i++) {
+      if (validadorNumeroPrimo(i)) {
+        for (int j = i * i; j <= rangeB; j += i) {
+          removerNPrimos.add(j);
+        }
+      }
+    }
 
-    return primosECompostosPrimazes;
+    // Remove os números compostos
+    primosECompostosPrimazes.removeWhere((number) => removerNPrimos.contains(number));
+
+    return primosECompostosPrimazes..sort();
   }
 }
