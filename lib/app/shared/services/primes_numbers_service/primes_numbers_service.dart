@@ -29,6 +29,8 @@ class PrimesNumberService {
     Set<int> primes = {};
     int chunkSize = 1000; // Processa em blocos de 1000 números
 
+    print("Estou sendo calculado aqui");
+
     // numbers prime exception -> 1, 2, 3, 5
     List<int> elementsExceptions = [1, 2, 3, 5];
 
@@ -84,19 +86,48 @@ class PrimesNumberService {
       primes = await numerosPrimos(start, end);
       print("Primes: $primes");
     } catch (e) {
-      print('Erro ao calcular números primos: $e. Abordando manual');
-      primes = processChunk(start,end);
+      print('Erro ao calcular números primos: $e. Tentando novamente.');
+      if(end < 50){
+        primes = processChunk(start, end);
+      } else {
+        primes = await numerosPrimos(start, end);
+      }
     }
 
     // Envia os resultados de volta para o main isolate
     sendPort.send(primes);
   }
 
+  // Versão atualizada do método que calcula os números primos com tratamento para grandes intervalos.
   Future<List<int>> numerosPrimos(int rangeA, int rangeB) async {
-    return await compute(
-      _calculateNumerosPrimos,
-      {'rangeA': rangeA, 'rangeB': rangeB},
-    );
+    // Defina um limite menor para processamentos seguros no dispositivo
+    final maxRange = 10000000; // exemplo de limite para evitar falhas de memória
+    if ((rangeB - rangeA) > maxRange) {
+      throw Exception("Intervalo muito grande. Por favor, reduza o range para evitar falhas de memória.");
+    }
+    
+    // Se o range é elevado, processa em chunks para evitar loading excessivo
+    return await compute(_calculateNumerosPrimosChunked, {'rangeA': rangeA, 'rangeB': rangeB});
+  }
+  
+  // Novo método usando processamento em chunk para cálculos sem sobrecarregar a memória.
+  List<int> _calculateNumerosPrimosChunked(Map<String, int> params) {
+    int rangeA = params['rangeA']!;
+    int rangeB = params['rangeB']!;
+    // Divida o range em blocos menores (por exemplo, 100K números por bloco)
+    int chunkSize = 100000; 
+    Set<int> resultados = {};
+    
+    for (int chunkStart = rangeA; chunkStart <= rangeB; chunkStart += chunkSize) {
+      int chunkEnd = (chunkStart + chunkSize - 1).clamp(chunkStart, rangeB);
+      
+      // Utilize o algoritmo atual para o bloco
+      final partial = _calculateNumerosPrimos({'rangeA': chunkStart, 'rangeB': chunkEnd});
+      resultados.addAll(partial);
+    }
+    
+    List<int> listaOrdenada = resultados.toList()..sort();
+    return listaOrdenada;
   }
 
   List<int> _calculateNumerosPrimos(Map<String, int> params) {
@@ -112,8 +143,12 @@ class PrimesNumberService {
     print("Primos básicos: $primosBasicos");
     fixos = fixedNumberGenerator?.generateFixedNumbers(rangeA, rangeB) ?? {};
     print("Fixos: $fixos");
-    formulaUm = formula1(fixos, rangeB).toSet();
-    print("Fórmula 1: $formulaUm");
+    if(rangeB > 1000000){
+      formulaUm = formula1v2(fixos, rangeB).toSet();
+    }else{
+      formulaUm = formula1v2(fixos, rangeB).toSet();
+    }
+    print("Fórmula 1 v2: $formulaUm");
 
     for (int element1 in primosBasicos) {
       for (int element2 in formulaUm) {
@@ -294,5 +329,39 @@ class PrimesNumberService {
     primosECompostosPrimazes.removeWhere((number) => removerNPrimos.contains(number));
 
     return primosECompostosPrimazes..sort();
+  }
+
+  // Novo método formula1v2 com otimizações de desempenho.
+  List<int> formula1v2(Map<String, int> numerosFixos, int rangeB) {
+    Set<int> resultados = {}; // Usar Set para evitar duplicatas
+    
+    // Para cada valor fixo, calcula o n máximo possível e itera até lá.
+    numerosFixos.forEach((key, value) {
+      int maxN = ((rangeB - value) / 30).floor();
+      for (int n = 0; n <= maxN; n++) {
+        int resultFunction = 30 * n + value;
+        if (validadorNumeroPrimo(resultFunction)) {
+          resultados.add(resultFunction);
+        }
+      }
+    });
+    
+    // Identifica e remove os múltiplos dos primos básicos utilizando o método de crivo simples.
+    int sqrtRangeB = sqrt(rangeB).toInt();
+    Set<int> removerNPrimos = {};
+    for (int i = 2; i <= sqrtRangeB; i++) {
+      if (validadorNumeroPrimo(i)) {
+        for (int j = i * i; j <= rangeB; j += i) {
+          removerNPrimos.add(j);
+        }
+      }
+    }
+    
+    resultados.removeAll(removerNPrimos);
+    
+    List<int> listaOrdenada = resultados.toList()
+      ..sort((a, b) => a.compareTo(b));
+    
+    return listaOrdenada;
   }
 }

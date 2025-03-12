@@ -154,19 +154,15 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                             : ButtonComponent(
                                 action: () async {
                                   _isLoading.value = true;
-                                  print(
-                                      "Simulando cálculo de números primos...");
-                                  print(_isLoading.value);
 
                                   try {
-                                    // Simulação de uma operação demorada com Future.delayed
-                                    var listNumbers = await primeservice.listPrimesNumbers(int.parse(controllerNumber1.text), int.parse(controllerNumber2.text));
 
                                     // Simula a navegação com dados fictícios
                                     await Modular.to.pushNamed(
                                       '/view-numbers/',
                                       arguments: {
-                                        'numbersPrime': listNumbers
+                                        'startNumber': int.parse(controllerNumber1.text),
+                                        'endNumber': int.parse(controllerNumber2.text),
                                       },
                                     );
                                   } catch (error) {
@@ -174,8 +170,6 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                                         'Erro ao simular cálculo de números primos: $error');
                                   } finally {
                                     _isLoading.value = false;
-                                    print(
-                                        "Estado de loading final: ${_isLoading.value}");
                                   }
                                 },
                                 label: "Calcular",

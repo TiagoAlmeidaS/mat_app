@@ -10,6 +10,6 @@ class ViewNumbersModule extends Module {
 
   @override
   List<ModularRoute> get routes => [
-    ChildRoute('/', child: (context, args) => ViewNumbersPage(numbersPrime: args.data['numbersPrime'],)),
+    ChildRoute('/', child: (context, args) => ViewNumbersPage(startNumber: args.data['startNumber'], endNumber: args.data['endNumber'],)),
   ];
 }

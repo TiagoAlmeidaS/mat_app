@@ -378,5 +378,62 @@ void main() {
         expect(result, isNot(contains(number)));
       }
     });
+
+    test('Deve retornar números corretos dentro do intervalo (72000000, 72001000)', () async {
+      final start = 72000000;
+      final end = 72001000;
+
+      final result = await service.listPrimesNumbers(start, end);
+
+      print(result);
+
+      // Verifica se 72000001 não está na lista
+      expect(result.contains(72000001), isFalse);
+      expect(result.contains(72000011), isFalse);
+    }, timeout: Timeout(Duration(minutes: 5)));
+  });
+
+  group('Formula1v2 Performance Tests', () {
+    late PrimesNumberService service;
+    final numerosFixos = {
+      't11': 11,
+      't12': 31,
+      't31': 13,
+      't32': 23,
+      't71': 7,
+      't72': 17,
+      't91': 19,
+      't92': 29
+    };
+
+    // Utilize um range grande para medir a performance.
+    final int rangeB = 10000;
+
+    setUp(() {
+      service = PrimesNumberService();
+    });
+
+    test('formula1 vs formula1v2 retornam resultados iguais', () {
+      final result1 = service.formula1(numerosFixos, rangeB);
+      final result2 = service.formula1v2(numerosFixos, rangeB);
+
+      expect(result1, equals(result2));
+    });
+
+    test('formula1v2 deve ser mais rápida que formula1', () {
+      final sw1 = Stopwatch()..start();
+      service.formula1(numerosFixos, rangeB);
+      sw1.stop();
+
+      final sw2 = Stopwatch()..start();
+      service.formula1v2(numerosFixos, rangeB);
+      sw2.stop();
+
+      print('Tempo formula1: ${sw1.elapsedMilliseconds} ms');
+      print('Tempo formula1v2: ${sw2.elapsedMilliseconds} ms');
+
+      // Ajuste o critério conforme necessário (ex: esperar que formula1v2 seja pelo menos 10% mais rápida)
+      expect(sw2.elapsedMilliseconds, lessThan(sw1.elapsedMilliseconds));
+    });
   });
 }
