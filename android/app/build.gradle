@@ -52,8 +52,8 @@ android {
         applicationId "com.matematica.gerando.primos"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 202501233
-        versionName '1.0.4'
+        versionCode 202503121
+        versionName '1.0.5'
     }
 
     signingConfigs {
