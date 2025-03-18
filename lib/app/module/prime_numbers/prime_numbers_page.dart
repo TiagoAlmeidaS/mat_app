@@ -202,7 +202,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Text(
-                  "Versão: 1.0.4 (202503121)",
+                  "Versão: 1.0.6 (202503181)",
                   style: TextStyle(color: Colors.white),
                 ),
               )

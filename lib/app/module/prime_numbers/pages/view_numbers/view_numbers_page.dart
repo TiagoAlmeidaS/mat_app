@@ -24,19 +24,38 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
   int totalPages = 1;
   bool isLoadingMore = false;
   bool isInitialLoading = true;
+  bool _isCopyVisible = true; // Variável de controle para o botão
 
   @override
   void initState() {
     super.initState();
     _loadPage(page: currentPage);
-    _scrollController.addListener(() {
-      // Se estiver próximo do final e tiver mais páginas
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-        if (!isLoadingMore && currentPage < totalPages) {
-          _loadPage(page: currentPage + 1);
+    _scrollController.addListener(_handleScroll); // Chama o método refatorado
+  }
+
+  void _handleScroll() {
+    if (_scrollController.hasClients) {
+      // Verifica se chegou próximo do fim para esconder o botão
+      if (_scrollController.offset >= _scrollController.position.maxScrollExtent - 50) {
+        if (_isCopyVisible) {
+          setState(() {
+            _isCopyVisible = false;
+          });
+        }
+      } else {
+        if (!_isCopyVisible) {
+          setState(() {
+            _isCopyVisible = true;
+          });
         }
       }
-    });
+      // Também pode incluir a lógica de carregar nova página se estiver próximo do fim
+      if (_scrollController.offset >= _scrollController.position.maxScrollExtent - 200 &&
+          !isLoadingMore &&
+          currentPage < totalPages) {
+        _loadPage(page: currentPage + 1);
+      }
+    }
   }
 
   Future<void> _loadPage({required int page}) async {
@@ -48,7 +67,7 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
         start: widget.startNumber,
         end: widget.endNumber,
         page: page,
-        pageSize: 500
+        pageSize: 500,
       );
       // Atualiza estado com os novos dados
       setState(() {
@@ -67,6 +86,10 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
         isLoadingMore = false;
         isInitialLoading = false;
       });
+      // Se o número de itens for menor que 29 e houver mais páginas, busca a próxima
+      if (allPrimes.length < 29 && currentPage < totalPages) {
+        _loadPage(page: currentPage + 1);
+      }
     }
   }
 
@@ -159,18 +182,24 @@ class _ViewNumbersPageState extends State<ViewNumbersPage> {
               )
             : _buildGrid(),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Converte a lista de primos em uma string separada por vírgulas.
-          final primesText = allPrimes.join(", ");
-          Clipboard.setData(ClipboardData(text: primesText));
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Números copiados para o Clipboard!")),
-          );
-        },
-        tooltip: "Copiar para Clipboard",
-        child: const Icon(Icons.copy),
-      ),
+      // O botão só será exibido se ainda não estiver na última página.
+      floatingActionButton: _isCopyVisible
+          ? AnimatedOpacity(
+              duration: Duration(milliseconds: 300),
+              opacity: _isCopyVisible ? 1.0 : 0.0,
+              child: FloatingActionButton(
+                onPressed: () {
+                  final primesText = allPrimes.join(", ");
+                  Clipboard.setData(ClipboardData(text: primesText));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Números copiados para o Clipboard!")),
+                  );
+                },
+                tooltip: "Copiar para Clipboard",
+                child: const Icon(Icons.copy),
+              ),
+            )
+          : null,
     );
   }
 }

@@ -107,7 +107,7 @@ class PrimesNumberService {
     }
     
     // Se o range é elevado, processa em chunks para evitar loading excessivo
-    return await compute(_calculateNumerosPrimosChunked, {'rangeA': rangeA, 'rangeB': rangeB});
+    return await compute(_calculateNumerosPrimos, {'rangeA': rangeA, 'rangeB': rangeB});
   }
   
   // Novo método usando processamento em chunk para cálculos sem sobrecarregar a memória.
