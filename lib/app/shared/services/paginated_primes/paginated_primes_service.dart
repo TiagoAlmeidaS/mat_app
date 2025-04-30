@@ -14,22 +14,17 @@ class PaginatedPrimesService {
     if (start > end) {
       throw Exception("Intervalo inválido, start deve ser menor ou igual a end.");
     }
-    // Calcula a quantidade total de números e de páginas.
+    
+    // Calcula a quantidade total de números e de páginas
     final totalNumbers = end - start + 1;
     final totalPages = (totalNumbers / pageSize).ceil();
 
-    print("Total de números: $totalNumbers, total de páginas: $totalPages");
-
-    // Define o subintervalo correspondente à página atual.
+    // Define o subintervalo correspondente à página atual
     final pageStart = start + (page - 1) * pageSize;
-
-  
     final pageEnd = min(pageStart + pageSize - 1, end);
-    print("Página $page: [$pageStart, $pageEnd]");
 
-
-    // Processa o subintervalo utilizando o serviço atual.
-    final primes = await _service.listPrimesNumbers(pageStart, pageEnd);
+    // Usa a implementação otimizada para intervalos grandes
+    final primes = await _service.listPrimesNumbersV2(pageStart, pageEnd);
 
     return PaginatedPrimesResult(
       primes: primes,

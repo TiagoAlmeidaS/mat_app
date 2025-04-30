@@ -12,74 +12,99 @@ class PrimesNumberService {
   PrimesNumberService() {
     fixedNumberGenerator = FixedNumberGenerator(validator);
   }
+  
+  // Novo método para logar o tempo de execução de funções assíncronas.
+  Future<T> _logExecutionTimeAsync<T>(String methodName, Future<T> Function() function) async {
+    final start = DateTime.now();
+    T result = await function();
+    final end = DateTime.now();
+    print("[$methodName] executado em ${end.difference(start).inMilliseconds}ms");
+    return result;
+  }
+  
+  // Novo método para logar o tempo de execução de funções síncronas.
+  T _logExecutionTimeSync<T>(String methodName, T Function() function) {
+    final start = DateTime.now();
+    T result = function();
+    final end = DateTime.now();
+    print("[$methodName] executado em ${end.difference(start).inMilliseconds}ms");
+    return result;
+  }
 
   // Método principal para obter números primos, adaptando por plataforma
   Future<List<int>> listPrimesNumbers(int start, int end) async {
-    if (kIsWeb) {
-      // Comportamento para Web
-      return await _listPrimesNumbersWeb(start, end);
-    } else {
-      // Comportamento para Mobile/Desktop
-      return await listPrimesNumbersV2(start, end);
-    }
+    return await _logExecutionTimeAsync("listPrimesNumbers", () async {
+      if (kIsWeb) {
+        // Comportamento para Web
+        return await _listPrimesNumbersWeb(start, end);
+      } else {
+        // Comportamento para Mobile/Desktop
+        return await listPrimesNumbersV2(start, end);
+      }
+    });
   }
 
   // Implementação para Web (chunking)
   Future<List<int>> _listPrimesNumbersWeb(int start, int end) async {
-    Set<int> primes = {};
-    int chunkSize = 1000; // Processa em blocos de 1000 números
-
-    print("Estou sendo calculado aqui");
-
-    // numbers prime exception -> 1, 2, 3, 5
-    List<int> elementsExceptions = [1, 2, 3, 5];
-
-    for (int i = start; i <= end; i += chunkSize) {
-      final chunkStart = i;
-      final chunkEnd = (i + chunkSize - 1).clamp(chunkStart, end);
-
-      // Processa cada bloco
-      primes.addAll(processChunk(chunkStart, chunkEnd));
-
-      primes.removeAll(elementsExceptions);
-
-      // Aguarda um frame para evitar travamento
-      await Future.delayed(Duration(milliseconds: 1));
-    }
-
-    return primes.toList();
+    return await _logExecutionTimeAsync("_listPrimesNumbersWeb", () async {
+      Set<int> primes = {};
+      int chunkSize = 1000; // Processa em blocos de 1000 números
+      
+      print("Estou sendo calculado aqui");
+      
+      // numbers prime exception -> 1, 2, 3, 5
+      List<int> elementsExceptions = [1, 2, 3, 5];
+      
+      for (int i = start; i <= end; i += chunkSize) {
+        final chunkStart = i;
+        final chunkEnd = (i + chunkSize - 1).clamp(chunkStart, end);
+      
+        // Processa cada bloco
+        primes.addAll(processChunk(chunkStart, chunkEnd));
+      
+        primes.removeAll(elementsExceptions);
+      
+        // Aguarda um frame para evitar travamento
+        await Future.delayed(Duration(milliseconds: 1));
+      }
+      
+      return primes.toList();
+    });
   }
 
   // Método auxiliar para processar um bloco de números
   List<int> processChunk(int start, int end) {
-    // numbers prime exception -> 1, 2, 3, 5
-    List<int> elementsExceptions = [1, 2, 3, 5];
-    Set<int> primes = {};
-    for (int i = start; i <= end; i++) {
-      if (validadorNumeroPrimo(i)) primes.add(i);
-    }
-
-    primes.removeAll(elementsExceptions);
-    return primes.toList();
+    return _logExecutionTimeSync("processChunk", () {
+      // numbers prime exception -> 1, 2, 3, 5
+      List<int> elementsExceptions = [1, 2, 3, 5];
+      Set<int> primes = {};
+      for (int i = start; i <= end; i++) {
+        if (validadorNumeroPrimo(i)) primes.add(i);
+      }
+  
+      primes.removeAll(elementsExceptions);
+      return primes.toList();
+    });
   }
 
   // Implementação para Mobile/Desktop usando Isolates
   Future<List<int>> listPrimesNumbersV2(int start, int end) async {
-    final ReceivePort receivePort = ReceivePort();
-
-    // Spawna um isolate
-    await Isolate.spawn(
-        _calculatePrimesInIsolate, [receivePort.sendPort, start, end]);
-
-    // Recebe os dados do isolate
-    return await receivePort.first;
+    return await _logExecutionTimeAsync("listPrimesNumbersV2", () async {
+      final ReceivePort receivePort = ReceivePort();
+  
+      // Spawna um isolate
+      await Isolate.spawn(_calculatePrimesInIsolate, [receivePort.sendPort, start, end]);
+  
+      // Recebe os dados do isolate
+      return await receivePort.first;
+    });
   }
 
   void _calculatePrimesInIsolate(List<dynamic> args) async {
     SendPort sendPort = args[0];
     int start = args[1];
     int end = args[2];
-
+  
     // Calcula os números primos
     List<int> primes = [];
     try {
@@ -87,27 +112,29 @@ class PrimesNumberService {
       print("Primes: $primes");
     } catch (e) {
       print('Erro ao calcular números primos: $e. Tentando novamente.');
-      if(end < 50){
+      if (end < 50) {
         primes = processChunk(start, end);
       } else {
         primes = await numerosPrimos(start, end);
       }
     }
-
+  
     // Envia os resultados de volta para o main isolate
     sendPort.send(primes);
   }
 
   // Versão atualizada do método que calcula os números primos com tratamento para grandes intervalos.
   Future<List<int>> numerosPrimos(int rangeA, int rangeB) async {
-    // Defina um limite menor para processamentos seguros no dispositivo
-    final maxRange = 10000000; // exemplo de limite para evitar falhas de memória
-    if ((rangeB - rangeA) > maxRange) {
-      throw Exception("Intervalo muito grande. Por favor, reduza o range para evitar falhas de memória.");
-    }
-    
-    // Se o range é elevado, processa em chunks para evitar loading excessivo
-    return await compute(_calculateNumerosPrimos, {'rangeA': rangeA, 'rangeB': rangeB});
+    return await _logExecutionTimeAsync("numerosPrimos", () async {
+      // Defina um limite menor para processamentos seguros no dispositivo
+      final maxRange = 10000000; // exemplo de limite para evitar falhas de memória
+      if ((rangeB - rangeA) > maxRange) {
+        throw Exception("Intervalo muito grande. Por favor, reduza o range para evitar falhas de memória.");
+      }
+      
+      // Se o range é elevado, processa em chunks para evitar loading excessivo
+      return await compute(_calculateNumerosPrimos, {'rangeA': rangeA, 'rangeB': rangeB});
+    });
   }
   
   // Novo método usando processamento em chunk para cálculos sem sobrecarregar a memória.
@@ -139,14 +166,21 @@ class PrimesNumberService {
     Set<int> formulaUm = {};
     List<int> excluirNaoNumeroPrimo = [1,2,3,5];
 
-    primosBasicos = numerosPrimosBasicos(rangeB);
+    primosBasicos = _logExecutionTimeSync("numerosPrimosBasicos", () {
+      return numerosPrimosBasicos(rangeB);
+    });
+    
     print("Primos básicos: $primosBasicos");
     fixos = fixedNumberGenerator?.generateFixedNumbers(rangeA, rangeB) ?? {};
     print("Fixos: $fixos");
     if(rangeB > 1000000){
-      formulaUm = formula1v2(fixos, rangeB).toSet();
+      _logExecutionTimeSync("formula1v2", () {
+        formulaUm = formula1v2(fixos, rangeB).toSet();
+      });
     }else{
-      formulaUm = formula1v2(fixos, rangeB).toSet();
+      _logExecutionTimeSync("formula1", () {
+        formulaUm = formula1(fixos, rangeB).toSet();
+      });
     }
     print("Fórmula 1 v2: $formulaUm");
 
@@ -168,71 +202,29 @@ class PrimesNumberService {
   }
 
   bool validadorNumeroPrimo(int numero) {
-    bool ret = false;
-
-    if (numero == 2) {
-      ret = true;
-      return ret;
+    // Verificação rápida de casos especiais
+    if (numero == 1) return false;
+    if (numero == 2 || numero == 3 || numero == 5 || numero == 7) return true;
+    
+    // Verificação de múltiplos de 2, 3 e 5
+    if (numero % 2 == 0 || numero % 3 == 0 || numero % 5 == 0) return false;
+    
+    // Verificação de terminação (deve terminar em 1, 3, 7 ou 9)
+    final ultimoDigito = numero % 10;
+    if (ultimoDigito != 1 && ultimoDigito != 3 && ultimoDigito != 7 && ultimoDigito != 9) {
+      return false;
     }
-
-    if (numero == 3) {
-      ret = true;
-      return ret;
-    }
-
-    if (numero == 5) {
-      ret = true;
-      return ret;
-    }
-
-    if (numero == 7) {
-      ret = true;
-      return ret;
-    }
-
-    if (numero == 1) {
-      ret = false;
-      return ret;
-    }
-
-    if (numero % 5 == 0) {
-      ret = false;
-      return ret;
-    }
-
-    if (numero % 3 == 0) {
-      ret = false;
-      return ret;
-    }
-
-    if (numero % 2 == 0) {
-      ret = false;
-      return ret;
-    }
-
-    if (!numero.toString().endsWith('1') ||
-        !numero.toString().endsWith('3') ||
-        !numero.toString().endsWith('7') ||
-        !numero.toString().endsWith('9')) {
-      ret = true;
-      return ret;
-    }
-
+    
+    // Verificação de soma dos dígitos (múltiplo de 3)
     int soma = 0;
-    int resto = 0;
     int n = numero;
     while (n > 0) {
-      resto = n % 10;
-      n = ((n - resto) / 10).round();
-      soma = soma + resto;
+      soma += n % 10;
+      n ~/= 10;
     }
-
-    if (soma % 3 == 0) {
-      ret = false;
-      return ret;
-    }
-
-    return ret;
+    if (soma % 3 == 0) return false;
+    
+    return true;
   }
 
   List<int> numerosPrimosBasicos(int rangeB) {
@@ -271,64 +263,54 @@ class PrimesNumberService {
   }
 
   Map<String, int> numerosFixos({required int rangeA, required int rangeB}) {
-    Map<String, String> terminacoes = Map<String, String>();
-    terminacoes['t1'] = '1';
-    terminacoes['t3'] = '3';
-    terminacoes['t7'] = '7';
-    terminacoes['t9'] = '9';
-    Map<String, int> tabelaFixa = {};
-
-    terminacoes.forEach((key, terminacao) {
+    final Map<String, int> tabelaFixa = {};
+    final List<int> terminacoes = [1, 3, 7, 9];
+    
+    for (final terminacao in terminacoes) {
       int value = rangeA;
-
-      //TODO: Necessário que meu value ele seja maior que sete. 
-      while (value.toString().endsWith(terminacao) == false || value == 1) {
+      
+      // Encontra o primeiro número terminado em 'terminacao' maior que rangeA
+      while (value % 10 != terminacao || value == 1) {
         value++;
-        if (validadorNumeroPrimo(value) == false &&
-            value.toString().endsWith(terminacao) == true) {
-          value++;
+      }
+      
+      // Verifica se é primo
+      if (!validadorNumeroPrimo(value)) {
+        value += 10;
+        while (!validadorNumeroPrimo(value)) {
+          value += 10;
         }
       }
-
-      tabelaFixa[key + '1'] = value;
+      
+      tabelaFixa['t${terminacao}1'] = value;
+      
+      // Encontra o próximo número terminado em 'terminacao' que é primo
       int nextValue = value + 10;
-      while (validadorNumeroPrimo(nextValue) == false) {
-        nextValue = nextValue + 10;
+      while (!validadorNumeroPrimo(nextValue)) {
+        nextValue += 10;
       }
-      tabelaFixa[key + '2'] = nextValue;
-    });
-
-    print("Tabela fixa: $tabelaFixa");
+      tabelaFixa['t${terminacao}2'] = nextValue;
+    }
+    
     return tabelaFixa;
   }
 
   List<int> formula1(Map<String, int> numerosFixos, int rangeB) {
-    List<int> primosECompostosPrimazes = [];
-    Set<int> removerNPrimos = {}; // Usar Set para evitar duplicatas
-    int resultFunction;
-
-    numerosFixos.forEach((key, value) {
-      // Gera os números da fórmula 1 para cada valor t
-      for (int n = 0; (resultFunction = 30 * n + value) <= rangeB; n++) {
-        if(validadorNumeroPrimo(resultFunction)){
-          primosECompostosPrimazes.add(resultFunction);
-        }
-      }
-    });
-
-    // Identifica e remove os múltiplos dos primos básicos
-    for (int i = 2; i <= sqrt(rangeB).toInt(); i++) {
-      if (validadorNumeroPrimo(i)) {
-        for (int j = i * i; j <= rangeB; j += i) {
-          removerNPrimos.add(j);
+    final Set<int> resultados = {};
+    
+    for (final entry in numerosFixos.entries) {
+      final value = entry.value;
+      final maxN = ((rangeB - value) / 30).floor();
+      
+      for (int n = 0; n <= maxN; n++) {
+        final resultFunction = 30 * n + value;
+        if (resultFunction <= rangeB && validadorNumeroPrimo(resultFunction)) {
+          resultados.add(resultFunction);
         }
       }
     }
-
-    // Remove os números compostos
-    primosECompostosPrimazes.removeWhere((number) => removerNPrimos.contains(number));
-
-    return primosECompostosPrimazes..sort();
+    
+    return resultados.toList()..sort();
   }
 
   // Novo método formula1v2 com otimizações de desempenho.
@@ -363,5 +345,29 @@ class PrimesNumberService {
       ..sort((a, b) => a.compareTo(b));
     
     return listaOrdenada;
+  }
+
+  List<int> formula2(List<int> primosBasicos, int rangeB) {
+    final Set<int> compostosPrimazes = {};
+    
+    for (final pb in primosBasicos) {
+      final razao = 30 * pb;
+      final maxN = ((rangeB - pb) / razao).floor();
+      
+      // Gera compostos primazes para cada terminação
+      for (int n = 0; n <= maxN; n++) {
+        final term1 = pb * (10 * n + 1);
+        final term3 = pb * (10 * n + 3);
+        final term7 = pb * (10 * n + 7);
+        final term9 = pb * (10 * n + 9);
+        
+        if (term1 <= rangeB) compostosPrimazes.add(term1);
+        if (term3 <= rangeB) compostosPrimazes.add(term3);
+        if (term7 <= rangeB) compostosPrimazes.add(term7);
+        if (term9 <= rangeB) compostosPrimazes.add(term9);
+      }
+    }
+    
+    return compostosPrimazes.toList()..sort();
   }
 }

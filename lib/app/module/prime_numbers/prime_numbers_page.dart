@@ -159,7 +159,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
 
                                     // Simula a navegação com dados fictícios
                                     await Modular.to.pushNamed(
-                                      '/view-numbers/',
+                                      '/view-numbers/view-direct',
                                       arguments: {
                                         'startNumber': int.parse(controllerNumber1.text),
                                         'endNumber': int.parse(controllerNumber2.text),
@@ -202,7 +202,7 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Text(
-                  "Versão: 1.0.6 (202503181)",
+                  "Versão: 1.0.7 (202504301)",
                   style: TextStyle(color: Colors.white),
                 ),
               )
