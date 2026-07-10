@@ -10,7 +10,7 @@ class HomeModule extends Module {
   List<ModularRoute> get routes => [
     ChildRoute('/', child: (context, args) => HomePage()),
     ModuleRoute(
-      '/prime_numbers/',
+      '/prime-numbers/',
       module: PrimeNumbersModule(),
     ),
   ];

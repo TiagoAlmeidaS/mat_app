@@ -13,7 +13,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     Future.delayed(Duration(seconds: 2), () {
-      Modular.to.pushNamed('/prime-numbers');
+      Modular.to.pushReplacementNamed('/prime-numbers/');
     });
     super.initState();
   }

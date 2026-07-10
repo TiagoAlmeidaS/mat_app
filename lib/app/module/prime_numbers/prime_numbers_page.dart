@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:mat_app/app/module/prime_numbers/presentation/stores/prime_numbers_store.dart';
 import 'package:mat_app/app/shared/mat_theme/color_theme/color_theme.dart';
 import 'package:mat_app/app/shared/mat_theme/components/text_field_component.dart';
-import 'package:mat_app/app/shared/services/primes_numbers_service/primes_numbers_service.dart';
-
-import 'widget/button_component.dart';
 
 class PrimeNumbersPage extends StatefulWidget {
   const PrimeNumbersPage({Key? key}) : super(key: key);
@@ -14,19 +12,22 @@ class PrimeNumbersPage extends StatefulWidget {
 }
 
 class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
-  TextEditingController controllerNumber1 = TextEditingController();
-  TextEditingController controllerNumber2 = TextEditingController();
+  late final TextEditingController controllerNumber1;
+  late final TextEditingController controllerNumber2;
+  late final PrimeNumbersStore store;
 
-  ValueNotifier<bool> _isLoading = ValueNotifier(false);
-
-  PrimesNumberService primeservice = Modular.get();
+  @override
+  void initState() {
+    super.initState();
+    store = Modular.get<PrimeNumbersStore>();
+    controllerNumber1 = TextEditingController(text: store.startText);
+    controllerNumber2 = TextEditingController(text: store.endText);
+  }
 
   @override
   void dispose() {
     controllerNumber1.dispose();
     controllerNumber2.dispose();
-    _isLoading
-        .dispose(); // Certifique-se de descartar o ValueNotifier para evitar vazamento de memória.
     super.dispose();
   }
 
@@ -34,25 +35,24 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Modular.get<ColorTheme>().primaryColor,
-      body: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: 10,
-          horizontal: 20,
-        ),
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(
+      body: AnimatedBuilder(
+        animation: store,
+        builder: (context, child) {
+          return Container(
+            width: double.maxFinite,
+            padding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    height: 30,
-                  ),
-                  Align(
+                  const SizedBox(height: 30),
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Números primos\n",
+                      'Numeros primos',
                       textAlign: TextAlign.start,
                       style: TextStyle(
                         color: Colors.white,
@@ -64,48 +64,85 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      children: const [
                         Text(
-                          "Informações e Regras:",
+                          'Regras',
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.white),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                        SizedBox(height: 4,),
                         Text(
-                          "1. Um número primo é um número natural maior que 1, que tem apenas dois divisores positivos: 1 e ele mesmo.",
+                          '1. O numero 1 nao e primo.',
                           style: TextStyle(color: Colors.white),
                         ),
                         Text(
-                          "Obs.: 2, 3, 5 são números primos de exceção para o cálculo",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 2,),
-                        Text(
-                          "2. O usuário pode inserir um intervalo de números inteiros para calcular todos os números primos dentro desse intervalo.",
+                          '2. O numero 2 e o unico numero primo par.',
                           style: TextStyle(color: Colors.white),
                         ),
-                        SizedBox(height: 2,),
                         Text(
-                          "3. Para o cálculo dos números primos, indicar o intervalo de números, depois em calcular.",
+                          '3. Um numero primo tem exatamente dois divisores positivos.',
                           style: TextStyle(color: Colors.white),
                         ),
-                        SizedBox(height: 2,),
+                        Text(
+                          '4. Informe um intervalo inteiro valido para calcular.',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.08,
-              ),
-              Column(
-                children: [
-                  Align(
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.maxFinite,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Plano atual: ${store.currentPlanLabel}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Validacao da Fase 2',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            OutlinedButton(
+                              onPressed: store.resetAccessToFree,
+                              child: const Text('Modo gratuito'),
+                            ),
+                            OutlinedButton(
+                              onPressed: store.activateSimulatedRewardedAccess,
+                              child: const Text('Simular rewarded'),
+                            ),
+                            OutlinedButton(
+                              onPressed: store.activateSimulatedProAccess,
+                              child: const Text('Simular Pro'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Adicionar intervalo desejado",
+                      'Adicionar intervalo desejado',
                       textAlign: TextAlign.start,
                       style: TextStyle(
                         color: Colors.white,
@@ -113,102 +150,132 @@ class _PrimeNumbersPageState extends State<PrimeNumbersPage> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
+                      SizedBox(
                         width: MediaQuery.of(context).size.width * 0.4,
                         child: TextFieldComponent(
                           controller: controllerNumber1,
+                          labelText: 'Inicio',
+                          onChanged: store.updateStart,
                         ),
                       ),
-                      Text(
-                        "à",
+                      const Text(
+                        'a',
                         style: TextStyle(color: Colors.white),
                       ),
-                      Container(
+                      SizedBox(
                         width: MediaQuery.of(context).size.width * 0.4,
                         child: TextFieldComponent(
                           controller: controllerNumber2,
+                          labelText: 'Fim',
+                          onChanged: store.updateEnd,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: _isLoading,
-                    builder: (context, isLoading, child) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: 50,
-                        child: _isLoading.value
-                            ? ButtonComponent(
-                                label: "",
-                                state: ButtonState.loading,
-                              )
-                            : ButtonComponent(
-                                action: () async {
-                                  _isLoading.value = true;
-
-                                  try {
-
-                                    // Simula a navegação com dados fictícios
-                                    await Modular.to.pushNamed(
-                                      '/view-numbers/view-direct',
-                                      arguments: {
-                                        'startNumber': int.parse(controllerNumber1.text),
-                                        'endNumber': int.parse(controllerNumber2.text),
-                                      },
-                                    );
-                                  } catch (error) {
-                                    print(
-                                        'Erro ao simular cálculo de números primos: $error');
-                                  } finally {
-                                    _isLoading.value = false;
-                                  }
-                                },
-                                label: "Calcular",
-                                state: _isLoading.value
-                                    ? ButtonState.loading
-                                    : ButtonState.standard,
+                  if (store.currentIntervalLength != null ||
+                      store.gatePreviewMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.maxFinite,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (store.currentIntervalLength != null)
+                            Text(
+                              'Tamanho do intervalo: ${store.currentIntervalLength}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          if (store.gatePreviewMessage != null) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              store.gatePreviewMessage!,
+                              style: TextStyle(
+                                color: store.gatePreviewDecision?.isAllowed == true
+                                    ? Colors.white70
+                                    : Modular.get<ColorTheme>().solarColor,
+                                fontWeight: FontWeight.w600,
                               ),
-                      );
-                    },
-                  ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (store.inputError != null) ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        store.inputError!,
+                        style: TextStyle(
+                          color: Modular.get<ColorTheme>().solarColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (store.calculationError != null) ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        store.calculationError!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 40),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.03,
-                  ),
-                  Container(
-                    child: Text("Exemplo de intervalo: 1 à 100",
-                        style: TextStyle(color: Colors.white)),
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: store.canSubmit
+                          ? () async {
+                              final success = await store.submit();
+                              if (!mounted || !success || store.result == null) {
+                                return;
+                              }
+
+                              await Modular.to.pushNamed(
+                                '/prime-numbers/result',
+                                arguments: store.result,
+                              );
+                            }
+                          : null,
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateColor.resolveWith(
+                          (states) => Modular.get<ColorTheme>().secondaryColor,
+                        ),
+                      ),
+                      child: store.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Calcular'),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.2,
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Text(
-                  "Criadores: G&T",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Text(
-                  "Versão: 1.0.7 (202504301)",
-                  style: TextStyle(color: Colors.white),
-                ),
-              )
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

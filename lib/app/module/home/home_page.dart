@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
           ),
           CardHorizontal(
             label: "Números Primos",
-            action: () => Modular.to.pushNamed('/prime_numbers'),
+            action: () => Modular.to.pushNamed('/prime-numbers/'),
             cardHorizontalState: CardHorizontalState.standard,
           ),
           const SizedBox(
